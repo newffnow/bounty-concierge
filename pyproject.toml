@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "bounty-concierge"
+version = "0.1.0"
+description = "RustChain bounty ecosystem concierge - find, claim, and track bounties"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "Elyan Labs", email = "scott@elyanlabs.ai"}]
+dependencies = ["requests>=2.28"]
+
+[project.scripts]
+concierge = "concierge.cli:main"

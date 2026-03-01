@@ -1,0 +1,564 @@
+"""Command-line interface for the RustChain Bounty Concierge.
+
+Subcommands:
+    browse   -- List and filter open bounties across all repos
+    faq      -- Ask a question about RustChain or bounties
+    wallet   -- Register a wallet or check balance
+    status   -- Check pending payouts for a wallet
+    engage   -- Cross-platform engagement (star repos, Dev.to stats)
+    announce -- Preview or post bounty announcements
+    claim    -- Show claim instructions for a specific bounty
+    version  -- Print version string
+"""
+
+import argparse
+import json
+import sys
+
+from concierge import __version__
+from concierge import config
+from concierge.bounty_index import aggregate, fetch_bounties
+from concierge.faq_engine import answer as faq_answer
+from concierge.wallet_helper import (
+    check_wallet_exists,
+    get_balance,
+    get_pending_transfers,
+    register_wallet_guide,
+    validate_wallet_name,
+)
+from concierge.payout_tracker import check_pending, check_history, format_payout_status
+from concierge.skill_matcher import recommend
+
+# Optional modules -- degrade gracefully if missing or broken.
+try:
+    from concierge.engagement import (
+        star_all_ecosystem_repos,
+        check_devto_articles,
+    )
+except ImportError:
+    star_all_ecosystem_repos = None
+    check_devto_articles = None
+
+try:
+    from concierge.announcer import format_announcement
+except ImportError:
+    format_announcement = None
+
+
+# ---------------------------------------------------------------------------
+# Output helpers
+# ---------------------------------------------------------------------------
+
+def _print_json(obj):
+    """Pretty-print a Python object as JSON."""
+    print(json.dumps(obj, indent=2, default=str))
+
+
+def _truncate(text, width):
+    """Truncate text to width, adding '...' if needed."""
+    if len(text) <= width:
+        return text
+    return text[: width - 3] + "..."
+
+
+def _print_bounty_table(bounties):
+    """Print a formatted ASCII table of bounties."""
+    if not bounties:
+        print("No bounties found matching your filters.")
+        return
+
+    # Column widths
+    w_num = 5
+    w_repo = 22
+    w_title = 42
+    w_rtc = 8
+    w_tier = 10
+    w_skills = 28
+
+    header = (
+        f"{'#':<{w_num}} "
+        f"{'Repo':<{w_repo}} "
+        f"{'Title':<{w_title}} "
+        f"{'RTC':>{w_rtc}} "
+        f"{'Tier':<{w_tier}} "
+        f"{'Skills':<{w_skills}}"
+    )
+    sep = "-" * len(header)
+
+    print(sep)
+    print(header)
+    print(sep)
+
+    for b in bounties:
+        repo_short = b["repo"].split("/")[-1]
+        skills_str = ", ".join(b["skills"]) if b["skills"] else "-"
+        print(
+            f"{b['number']:<{w_num}} "
+            f"{_truncate(repo_short, w_repo):<{w_repo}} "
+            f"{_truncate(b['title'], w_title):<{w_title}} "
+            f"{b['reward_rtc']:>{w_rtc}.1f} "
+            f"{b['difficulty']:<{w_tier}} "
+            f"{_truncate(skills_str, w_skills):<{w_skills}}"
+        )
+
+    print(sep)
+    print(f"Total: {len(bounties)} bounties")
+
+
+# ---------------------------------------------------------------------------
+# Subcommand handlers
+# ---------------------------------------------------------------------------
+
+def _cmd_browse(args):
+    """Handle the 'browse' subcommand."""
+    repos = None
+    if args.repo:
+        # Allow short names like 'bottube' -> 'Scottcjn/bottube'
+        repos = []
+        for r in args.repo:
+            if "/" not in r:
+                r = f"Scottcjn/{r}"
+            repos.append(r)
+
+    if args.dry_run:
+        print("[dry-run] Would fetch bounties from GitHub API")
+        if repos:
+            print(f"[dry-run] Repos: {', '.join(repos)}")
+        if args.skill:
+            print(f"[dry-run] Skill filter: {args.skill}")
+        if args.tier:
+            print(f"[dry-run] Tier filter: {args.tier}")
+        return
+
+    all_bounties = fetch_bounties(repos=repos)
+
+    # Apply filters
+    filtered = all_bounties
+
+    if args.skill:
+        skill_lower = args.skill.lower()
+        filtered = [b for b in filtered if skill_lower in [s.lower() for s in b["skills"]]]
+
+    if args.tier:
+        tier_lower = args.tier.lower()
+        filtered = [b for b in filtered if b["difficulty"] == tier_lower]
+
+    if args.min_rtc is not None:
+        filtered = [b for b in filtered if b["reward_rtc"] >= args.min_rtc]
+
+    if args.max_rtc is not None:
+        filtered = [b for b in filtered if b["reward_rtc"] <= args.max_rtc]
+
+    # Sort by RTC descending
+    filtered.sort(key=lambda b: b["reward_rtc"], reverse=True)
+
+    # Limit
+    filtered = filtered[: args.limit]
+
+    if args.json:
+        _print_json(filtered)
+    else:
+        _print_bounty_table(filtered)
+
+
+def _cmd_faq(args):
+    """Handle the 'faq' subcommand."""
+    question = " ".join(args.question)
+    if not question.strip():
+        print("Please provide a question.", file=sys.stderr)
+        sys.exit(1)
+
+    if args.dry_run:
+        print(f"[dry-run] Would look up FAQ for: {question}")
+        return
+
+    result = faq_answer(question, use_grok=args.grok)
+
+    if args.json:
+        _print_json(result)
+    else:
+        source_label = f"[{result['source']}]"
+        conf = f"(confidence: {result['confidence']:.0%})"
+        print(f"{source_label} {conf}")
+        print()
+        print(result["answer"])
+
+
+def _cmd_wallet(args):
+    """Handle the 'wallet' subcommand."""
+    action = args.wallet_action
+
+    if not action:
+        print("Usage: concierge wallet {register,balance}", file=sys.stderr)
+        print("Run 'concierge wallet --help' for details.", file=sys.stderr)
+        sys.exit(1)
+
+    if action == "register":
+        name = args.name
+        valid, msg = validate_wallet_name(name)
+        if not valid:
+            print(f"Error: {msg}", file=sys.stderr)
+            sys.exit(1)
+        if args.dry_run:
+            print(f"[dry-run] Would show registration guide for wallet: {name}")
+            return
+        guide = register_wallet_guide(name)
+        if args.json:
+            _print_json({"wallet_name": name, "guide": guide})
+        else:
+            print(guide)
+
+    elif action == "balance":
+        name = args.name
+        if args.dry_run:
+            print(f"[dry-run] Would check balance for: {name}")
+            return
+        result = get_balance(name)
+        if args.json:
+            _print_json(result)
+        else:
+            if "error" in result:
+                print(f"Error: {result['error']}", file=sys.stderr)
+                sys.exit(1)
+            print(f"Wallet:  {name}")
+            if "balance_rtc" in result:
+                print(f"Balance: {result['balance_rtc']:.6f} RTC")
+            elif "amount_i64" in result:
+                print(f"Balance: {result['amount_i64'] / 1_000_000:.6f} RTC")
+            else:
+                for k, v in result.items():
+                    print(f"  {k}: {v}")
+
+    else:
+        print(f"Unknown wallet action: {action}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_status(args):
+    """Handle the 'status' subcommand."""
+    wallet = args.wallet
+    if not wallet:
+        print("Error: --wallet is required for status checks.", file=sys.stderr)
+        sys.exit(1)
+
+    valid, msg = validate_wallet_name(wallet)
+    if not valid:
+        print(f"Error: {msg}", file=sys.stderr)
+        sys.exit(1)
+
+    if args.dry_run:
+        print(f"[dry-run] Would check payout status for wallet: {wallet}")
+        return
+
+    pending = check_pending(wallet)
+    history = check_history(wallet)
+
+    if args.json:
+        _print_json({"wallet": wallet, "pending": pending, "history": history})
+    else:
+        print(f"Payout status for: {wallet}")
+        print()
+        print(format_payout_status(pending, history))
+
+
+def _cmd_engage(args):
+    """Handle the 'engage' subcommand."""
+    if args.star_repos:
+        if star_all_ecosystem_repos is None:
+            print(
+                "Error: engagement module is not available.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        if args.dry_run:
+            print("[dry-run] Would star the following repos:")
+            for repo in config.REPOS:
+                print(f"  {repo}")
+            return
+
+        token = config.GITHUB_TOKEN
+        if not token:
+            print(
+                "Error: GITHUB_TOKEN environment variable is required to star repos.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        results = star_all_ecosystem_repos(token)
+        if args.json:
+            _print_json(results)
+        else:
+            for repo, ok in results.items():
+                status = "starred" if ok else "FAILED"
+                print(f"  {repo}: {status}")
+
+    elif args.devto:
+        if check_devto_articles is None:
+            print(
+                "Error: engagement module is not available.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        if args.dry_run:
+            print("[dry-run] Would fetch Dev.to article stats")
+            return
+
+        api_key = config.DEVTO_API_KEY
+        if not api_key:
+            print(
+                "Error: DEVTO_API_KEY environment variable is required.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        articles = check_devto_articles(api_key)
+        if args.json:
+            _print_json(articles)
+        else:
+            if not articles:
+                print("No Dev.to articles found.")
+            else:
+                print("Dev.to Articles:")
+                for a in articles:
+                    print(
+                        f"  {a['title']}"
+                        f"  views={a['page_views']}"
+                        f"  reactions={a['positive_reactions']}"
+                    )
+                    print(f"    {a['url']}")
+
+    else:
+        print(
+            "Specify an engagement action: --star-repos or --devto",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _cmd_announce(args):
+    """Handle the 'announce' subcommand."""
+    if format_announcement is None:
+        print(
+            "Error: announcer module is not available.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if args.dry_run:
+        print("[dry-run] Announcement preview (fetching bounties)...")
+        print()
+
+    bounties = fetch_bounties()
+    bounties.sort(key=lambda b: b["reward_rtc"], reverse=True)
+
+    # Map to the format expected by format_announcement
+    formatted_bounties = []
+    for b in bounties:
+        formatted_bounties.append({
+            "title": b["title"],
+            "rtc": b["reward_rtc"],
+            "url": b["url"],
+            "difficulty": b["difficulty"],
+            "labels": b["labels"],
+        })
+
+    content = format_announcement(formatted_bounties)
+
+    if args.json:
+        _print_json(content)
+    else:
+        if args.dry_run:
+            print("[dry-run] Announcement preview (not posted):")
+            print()
+        print("--- Short (Twitter) ---")
+        print(content.get("short", ""))
+        print()
+        print("--- Medium (4claw / AgentChan) ---")
+        print(content.get("medium", ""))
+        print()
+        print("--- Long (Moltbook / Dev.to) ---")
+        print(content.get("long", ""))
+
+
+def _cmd_claim(args):
+    """Handle the 'claim' subcommand."""
+    repo = args.repo
+    if "/" not in repo:
+        repo = f"Scottcjn/{repo}"
+    issue_num = args.issue
+    wallet = args.wallet
+
+    valid, msg = validate_wallet_name(wallet)
+    if not valid:
+        print(f"Error: {msg}", file=sys.stderr)
+        sys.exit(1)
+
+    issue_url = f"https://github.com/{repo}/issues/{issue_num}"
+
+    if args.dry_run:
+        print(f"[dry-run] Would claim issue #{issue_num} in {repo}")
+        print(f"[dry-run] Wallet: {wallet}")
+        return
+
+    if args.json:
+        _print_json({
+            "action": "claim",
+            "repo": repo,
+            "issue": issue_num,
+            "wallet": wallet,
+            "url": issue_url,
+        })
+    else:
+        print(f"Claim instructions for issue #{issue_num}")
+        print(f"Repository: {repo}")
+        print(f"Issue URL:  {issue_url}")
+        print(f"Wallet:     {wallet}")
+        print()
+        print("Next steps:")
+        print(f"  1. Visit {issue_url}")
+        print(f"  2. Comment: \"I would like to claim this bounty. Wallet: {wallet}\"")
+        print(f"  3. Wait for assignment from a maintainer")
+        print(f"  4. Submit your PR referencing #{issue_num}")
+        print(f"  5. RTC will be transferred after merge and review")
+
+
+def _cmd_version(args):
+    """Handle the 'version' subcommand."""
+    if args.json:
+        _print_json({"version": __version__})
+    else:
+        print(f"bounty-concierge {__version__}")
+
+
+# ---------------------------------------------------------------------------
+# Argument parser
+# ---------------------------------------------------------------------------
+
+def _add_common_flags(parser):
+    """Add --dry-run and --json flags to a parser or subparser."""
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Preview actions without making network calls",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        default=False,
+        help="Output results as JSON",
+    )
+
+
+def _build_parser():
+    """Build and return the top-level argument parser."""
+    parser = argparse.ArgumentParser(
+        prog="concierge",
+        description="RustChain Bounty Concierge -- CLI for bounty hunters",
+    )
+    _add_common_flags(parser)
+
+    sub = parser.add_subparsers(dest="command", help="Available commands")
+
+    # --- browse ---
+    p_browse = sub.add_parser("browse", help="List and filter open bounties")
+    _add_common_flags(p_browse)
+    p_browse.add_argument("--repo", nargs="+", help="Filter by repo (short name or owner/repo)")
+    p_browse.add_argument("--skill", help="Filter by required skill")
+    p_browse.add_argument("--tier", choices=["micro", "standard", "major", "critical"],
+                          help="Filter by difficulty tier")
+    p_browse.add_argument("--min-rtc", type=float, help="Minimum RTC reward")
+    p_browse.add_argument("--max-rtc", type=float, help="Maximum RTC reward")
+    p_browse.add_argument("--limit", type=int, default=20, help="Max results (default: 20)")
+
+    # --- faq ---
+    p_faq = sub.add_parser("faq", help="Ask a question about RustChain or bounties")
+    _add_common_flags(p_faq)
+    p_faq.add_argument("question", nargs="+", help="Your question")
+    p_faq.add_argument("--grok", action="store_true", default=False,
+                       help="Use Grok AI for unanswered questions (requires GROK_API_KEY)")
+
+    # --- wallet ---
+    p_wallet = sub.add_parser("wallet", help="Wallet operations")
+    _add_common_flags(p_wallet)
+    wallet_sub = p_wallet.add_subparsers(dest="wallet_action", help="Wallet action")
+
+    p_w_register = wallet_sub.add_parser("register", help="Get wallet registration instructions")
+    _add_common_flags(p_w_register)
+    p_w_register.add_argument("name", help="Desired wallet name")
+
+    p_w_balance = wallet_sub.add_parser("balance", help="Check wallet RTC balance")
+    _add_common_flags(p_w_balance)
+    p_w_balance.add_argument("name", help="Wallet or miner ID")
+
+    # --- status ---
+    p_status = sub.add_parser("status", help="Check pending payouts for a wallet")
+    _add_common_flags(p_status)
+    p_status.add_argument("--wallet", required=True, help="Wallet or miner ID")
+
+    # --- engage ---
+    p_engage = sub.add_parser("engage", help="Cross-platform engagement actions")
+    _add_common_flags(p_engage)
+    p_engage.add_argument("--star-repos", action="store_true", default=False,
+                          help="Star all RustChain ecosystem repos on GitHub")
+    p_engage.add_argument("--devto", action="store_true", default=False,
+                          help="Check Dev.to article stats")
+
+    # --- announce ---
+    p_announce = sub.add_parser("announce", help="Preview or post bounty announcements")
+    _add_common_flags(p_announce)
+
+    # --- claim ---
+    p_claim = sub.add_parser("claim", help="Show claim instructions for a bounty")
+    _add_common_flags(p_claim)
+    p_claim.add_argument("--issue", type=int, required=True, help="Issue number")
+    p_claim.add_argument("--repo", default="Scottcjn/rustchain-bounties",
+                         help="Repository (default: Scottcjn/rustchain-bounties)")
+    p_claim.add_argument("--wallet", required=True, help="Your wallet name")
+
+    # --- version ---
+    p_version = sub.add_parser("version", help="Show version")
+    _add_common_flags(p_version)
+
+    return parser
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+def main():
+    """Main CLI entry point."""
+    parser = _build_parser()
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+
+    dispatch = {
+        "browse": _cmd_browse,
+        "faq": _cmd_faq,
+        "wallet": _cmd_wallet,
+        "status": _cmd_status,
+        "engage": _cmd_engage,
+        "announce": _cmd_announce,
+        "claim": _cmd_claim,
+        "version": _cmd_version,
+    }
+
+    handler = dispatch.get(args.command)
+    if handler:
+        try:
+            handler(args)
+        except KeyboardInterrupt:
+            print("\nInterrupted.", file=sys.stderr)
+            sys.exit(130)
+        except Exception as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        parser.print_help()
+        sys.exit(1)
