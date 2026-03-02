@@ -9,7 +9,7 @@ fingerprinting, and all supporting infrastructure.
 ## Table of Contents
 
 1. [RustChain Overview](#rustchain-overview)
-2. [RIP-200: Proof-of-Attestation](#rip-200-proof-of-attestation)
+2. [RIP-200: Proof-of-Antiquity](#rip-200-proof-of-antiquity)
 3. [RIP-201: Fleet Immune System](#rip-201-fleet-immune-system)
 4. [RIP-302: Agent Economy](#rip-302-agent-economy)
 5. [RIP-303: RTC as Gas](#rip-303-rtc-as-gas)
@@ -24,7 +24,7 @@ fingerprinting, and all supporting infrastructure.
 
 ## RustChain Overview
 
-RustChain is a custom blockchain designed around Proof-of-Attestation (PoA)
+RustChain is a custom blockchain designed around Proof-of-Antiquity (PoA)
 consensus. It rewards real, physical hardware participation rather than raw
 hash power or stake size.
 
@@ -59,7 +59,7 @@ hash power or stake size.
 
 ---
 
-## RIP-200: Proof-of-Attestation
+## RIP-200: Proof-of-Antiquity
 
 RIP-200 implements the "1 CPU = 1 Vote" consensus mechanism. Every physical
 machine gets one vote, weighted by its hardware antiquity.

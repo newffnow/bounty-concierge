@@ -9,7 +9,7 @@ the RustChain ecosystem.
 
 ### 1. What is RustChain?
 
-RustChain is a custom blockchain built around Proof-of-Attestation (PoA)
+RustChain is a custom blockchain built around Proof-of-Antiquity (PoA)
 consensus. Instead of rewarding raw hash power or stake size, it rewards
 real, physical hardware participation -- especially vintage machines.
 The network runs on a Python/Flask node backed by SQLite, with periodic
@@ -19,7 +19,7 @@ December 2, 2025. Primary node: `https://50.28.86.131`.
 ### 2. What is the RTC token?
 
 RTC (RustChain Token) is the native utility token of the RustChain
-blockchain. It is earned through hardware mining (Proof-of-Attestation),
+blockchain. It is earned through hardware mining (Proof-of-Antiquity),
 bounty rewards, and agent economy participation. The internal reference
 rate is **1 RTC = $0.10 USD**. RTC uses 6 decimal places internally
 (1 RTC = 1,000,000 units).
@@ -201,7 +201,7 @@ vintage hardware receives a higher multiplier on mining rewards because
 it is harder to emulate and cannot be mass-produced in VM farms. The
 rationale: if you are preserving and running a 20-year-old PowerPC Mac,
 you deserve more reward than someone spinning up a cloud instance. See
-[TECH_STACK.md](TECH_STACK.md#rip-200-proof-of-attestation) for the full
+[TECH_STACK.md](TECH_STACK.md#rip-200-proof-of-antiquity) for the full
 multiplier table.
 
 ### 19. What hardware qualifies for an antiquity bonus?
@@ -255,13 +255,13 @@ details.
 
 ### 22. What is RIP-200?
 
-RIP-200 is the Proof-of-Attestation consensus protocol. It implements
+RIP-200 is the Proof-of-Antiquity consensus protocol. It implements
 "1 CPU = 1 Vote" -- each physical machine gets one vote, weighted by its
 hardware antiquity multiplier. Miners submit attestation reports with
 hardware fingerprint data every 24 hours to remain eligible for epoch
 rewards. Each epoch distributes 1.5 RTC among all enrolled miners with
 valid attestation. See
-[TECH_STACK.md](TECH_STACK.md#rip-200-proof-of-attestation).
+[TECH_STACK.md](TECH_STACK.md#rip-200-proof-of-antiquity).
 
 ### 23. What is RIP-201?
 
