@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-03-11T07:05:27.817754+00:00",
-  "total_count": 185,
+  "updated_at": "2026-03-12T07:06:43.175814+00:00",
+  "total_count": 183,
   "bounties": [
     {
       "repo": "Scottcjn/Rustchain",
@@ -517,23 +517,25 @@
       ]
     },
     {
-      "repo": "Scottcjn/Rustchain",
-      "number": 785,
-      "title": "Mobile Wallet: Security hardening for v2",
-      "body": "## Mobile Wallet Security Hardening (v2)\n\nFollow-up from PR #784 dual-brain review (Claude Opus 4.6 + GPT-5.4).\n\nThe MVP is merged and functional. These items should be addressed in the next iteration:\n\n### Critical\n- [ ] **Replace XOR encryption with AES-GCM** in `secure.ts` \u2014 use `react-native-aes-gcm-crypto` or similar AEAD library\n- [ ] **Replace SHA-256 KDF with PBKDF2/Argon2** \u2014 single SHA-256(password+salt) is brute-forceable\n- [ ] **Fix `export()` function** \u2014 currently ignores password parameter, returns raw encrypted blob without re-authentication\n- [ ] **Verify `fromSecretKey` vs `fromSeed`** \u2014 tweetnacl `fromSecretKey` expects 64 bytes but simplified BIP39 produces 32. Should use `nacl.sign.keyPair.fromSeed()`\n\n### High\n- [ ] **Remove password from router params** \u2014 use secure context/state instead of URL params (leak risk via deep links, logs, crash reports)\n- [ ] **Add input validation** \u2014 `parseFloat` needs `Number.isFinite` + safe-integer + bounds checks. NaN/Infinity can flow into signing\n- [ ] **Add `chain_id` to signed payload** \u2014 prevents cross-fork replay attacks\n- [ ] **Validate QR code payloads** \u2014 currently trusts arbitrary scanned data\n\n### Medium\n- [ ] **Integrate NonceStore** \u2014 exists but not wired into `transfer()`. Race condition on rapid sends\n- [ ] **Re-require biometric on amount change** \u2014 `biometricVerified` stays true for screen lifetime\n- [ ] **Add hex/Base58 input validation** \u2014 malformed keys silently coerce to zeroes\n\n### Low\n- [ ] **Fix operator precedence** in `send.tsx:1258` \u2014 `(dryRunResult.senderBalance ?? 0 / 100000000)` should be `((dryRunResult.senderBalance ?? 0) / 100000000)`\n\n### Bounty\n**100 RTC** for addressing all Critical + High items.\n\ncc @createkr\n",
-      "url": "https://github.com/Scottcjn/Rustchain/issues/785",
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 675,
+      "title": "[BOUNTY: 25-100 RTC] Build RustChain Tools & Features in Java",
+      "body": "## Java Development Bounty\n\n**Reward: 25-100 RTC** based on scope and quality\n\nJava developers \u2014 bring RustChain to the JVM. We want production-grade Java tools that enterprises and Android devs can use.\n\n### Bounty Tiers\n\n**Tier 1: Utilities (25-40 RTC)**\n- RustChain CLI wallet (Maven/Gradle project)\n- Block explorer console app\n- Miner status dashboard (Swing/JavaFX or terminal)\n- RTC address generator + validator\n- Epoch reward calculator\n- Node health checker with alerting\n\n**Tier 2: Libraries & SDKs (40-75 RTC)**\n- `rustchain-java-sdk` \u2014 Java client library for the RustChain API (OkHttp/Retrofit)\n- Ed25519 wallet library with BIP39 mnemonic (BouncyCastle)\n- Attestation protocol client\n- Hardware fingerprint collector (JVM-based: timing, cache, SIMD via JNI)\n- Spring Boot starter for RustChain integration\n- Android wallet library (Kotlin-compatible)\n- Kafka integration for RustChain events (block, epoch, attestation streams)\n\n**Tier 3: Major Components (75-100 RTC)**\n- Java miner with attestation support\n- REST API server reimplementation (Spring Boot / Micronaut / Quarkus)\n- WebSocket event stream server\n- Android mining app (even proof-of-concept)\n- Gradle/Maven plugin for RustChain deployment\n- JMX monitoring adapter for RustChain nodes\n\n### Requirements\n- Java 17+ (LTS)\n- Maven or Gradle build (must compile with `mvn package` or `gradle build`)\n- Must include unit tests\n- Must include README with build + usage instructions\n- Clean code \u2014 no IDE-generated boilerplate walls\n- MIT or Apache-2.0 license\n\n### Bonus RTC\n- **+10 RTC** if published to Maven Central\n- **+5 RTC** if includes GitHub Actions CI\n- **+5 RTC** if includes Javadoc\n- **+10 RTC** if Kotlin-compatible (works from Kotlin without wrappers)\n\n### How to Submit\n1. Create a repo or open a PR\n2. Comment here with: wallet name, repo link, tier target\n\n### API Reference\n- Health: `GET https://rustchain.org/health`\n- Miners: `GET https://rustchain.org/api/miners`\n- Epoch: `GET https://rustchain.org/epoch`\n- Attestation: `POST https://rustchain.org/attest/challenge`\n- Explorer: `https://rustchain.org/explorer/`\n\n### Why Java?\n- Enterprise adoption path\n- Android wallet potential\n- Kafka/Spring ecosystem integration\n- JVM runs on everything (including vintage hardware with older JDKs)\n- jar9's KafkaBlockchain shows the pattern \u2014 tamper-evident Kafka chains are a natural fit\n\n**Build something real. Get paid in RTC.**\n\n```\nWallet: your-wallet-name\nRepo: https://github.com/...\nTier: 1/2/3\nDescription: [what you built]\n```",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/675",
       "labels": [
         "bounty",
-        "security",
-        "mobile-wallet"
+        "standard",
+        "development",
+        "java"
       ],
-      "created_at": "2026-03-10T02:19:56Z",
+      "created_at": "2026-03-05T23:56:07Z",
       "reward_rtc": 100.0,
-      "difficulty": "major",
+      "difficulty": "standard",
       "skills": [
+        "ci/cd",
+        "documentation",
         "javascript",
-        "rust",
-        "security"
+        "rust"
       ]
     },
     {
@@ -2097,26 +2099,6 @@
     },
     {
       "repo": "Scottcjn/bottube",
-      "number": 211,
-      "title": "[Bounty] Create a BoTTube upload bot in any language \u2014 10 RTC",
-      "body": "## Summary\nBuild a reusable bot that creates or sources video content and uploads it to BoTTube programmatically.\n\n## Why This Matters\nBoTTube needs more real automation examples. A working upload bot proves the creator API is usable, helps new bot builders start faster, and creates reusable tooling for the ecosystem.\n\n## Scope\n- use any language\n- use the documented BoTTube upload flow (`POST /api/upload` or the current documented equivalent)\n- generate or source legal, non-duplicate video content\n- attach title, description, tags, and creator metadata correctly\n- support unattended runs such as cron, scheduler, or daemon mode\n- include setup and usage documentation with required environment variables\n\n## Deliverable\nA public repo, PR, or runnable code bundle that can upload at least one real BoTTube video from a non-human automation account with clear setup instructions.\n\n## Acceptance Criteria\n- [ ] code can authenticate and upload to BoTTube successfully\n- [ ] metadata fields are configurable\n- [ ] README documents setup, env vars, and run flow\n- [ ] at least one successful upload is demonstrated\n- [ ] generated or sourced content is non-duplicate and non-spam\n- [ ] implementation does not automate Scott's human account `crypteauxcajun`\n\n## Verification Proof\nPost proof in this issue including:\n- repo or PR link\n- link to at least one uploaded BoTTube video\n- short log excerpt or screenshot of a successful run\n- note which account type was used\n- your RTC wallet or `miner_id`\n\n## Payout\n- `10 RTC`\n- `+3 RTC` if the bot generates videos using AI or a scripted rendering pipeline\n- `+2 RTC` if the pipeline also cross-posts to a submolt cleanly\n\n## Non-Goals\n- one-off manual upload helpers with no automation path\n- duplicate spam or scraped content with unclear rights\n- unsafe credential handling or hard-coded secrets\n- automation against Scott's human account\n\n## Claim Routing\nUse this issue for proof and payout discussion. If your work exposes a BoTTube API bug or missing feature, open a separate product issue and link it back here.\n\n## Reference\n- API docs: https://bottube.ai/api/docs",
-      "url": "https://github.com/Scottcjn/bottube/issues/211",
-      "labels": [
-        "help wanted",
-        "bounty"
-      ],
-      "created_at": "2026-03-01T14:03:57Z",
-      "reward_rtc": 10.0,
-      "difficulty": "standard",
-      "skills": [
-        "ci/cd",
-        "documentation",
-        "python",
-        "social-media"
-      ]
-    },
-    {
-      "repo": "Scottcjn/bottube",
       "number": 128,
       "title": "[BOUNTY] Referral Program Beta \u2014 Bring 1 New Human Signup (10 RTC each, Pool: 200 RTC)",
       "body": "## Summary\nUse the BoTTube referral system to bring one real new human signup to the platform.\n\n## Why This Matters\nThis bounty is for measurable ecosystem growth, not vanity traffic. The goal is to prove the referral flow works and that it can bring in real new humans who complete a genuine signup.\n\n## Scope\n- generate your referral code using the current referral endpoint\n- share your referral link with a real person\n- get one real new human to sign up through that link\n- preserve enough proof for maintainers to verify the referral event\n\n## Referral Flow\n- referral short-link: `https://bottube.ai/r/<code>`\n- agents: `GET /api/agents/me/referral`\n- humans: `GET /api/users/me/referral`\n\n## Deliverable\nOne verified new human signup attributed to your referral link.\n\n## Acceptance Criteria\n- [ ] referral link was issued by the live BoTTube referral flow\n- [ ] one real new human completed signup through the referral link\n- [ ] the referred account is not your own account, alt, or obvious sockpuppet\n- [ ] claim includes enough evidence for server-side maintainer verification\n- [ ] abuse, duplicate claims, or suspicious signup patterns are grounds for rejection\n\n## Verification Proof\nPost proof in this issue including:\n- your referral link\n- screenshot or recording of the signup confirmation without sensitive data\n- the new user's BoTTube username or profile URL\n- approximate signup time for maintainer cross-checking\n- your RTC wallet or `miner_id`\n\n## Payout\n- `10 RTC` per accepted referral\n- pool: `200 RTC`\n\n## Non-Goals\n- self-referrals\n- burner-account or bot-account signups\n- paid traffic, spam blasts, or rate-limit abuse\n- duplicate claims against the same referred user\n\n## Claim Routing\nUse this issue for referral proof and payout review. If the referral system itself breaks or behaves incorrectly, open a separate product issue in `Scottcjn/bottube` and link it back here.\n\n## Notes\nIf you hit rate limits, wait and retry normally. Do not brute force the referral endpoints.",
@@ -2264,25 +2246,6 @@
       "skills": [
         "javascript",
         "python",
-        "rust"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
-      "number": 1604,
-      "title": "[BOUNTY: 5 RTC] Write OpenAPI/Swagger spec for RustChain REST API",
-      "body": "Document all RustChain REST endpoints in OpenAPI 3.0 format. Endpoints: /health, /epoch, /api/miners, /wallet/balance, /attest/submit, etc. 5 RTC. Tags: openapi, swagger, api-documentation, rest, bounty",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1604",
-      "labels": [
-        "documentation",
-        "bounty",
-        "api"
-      ],
-      "created_at": "2026-03-10T23:49:19Z",
-      "reward_rtc": 5.0,
-      "difficulty": "micro",
-      "skills": [
-        "documentation",
         "rust"
       ]
     },
@@ -2934,6 +2897,26 @@
     },
     {
       "repo": "Scottcjn/rustchain-bounties",
+      "number": 1677,
+      "title": "[EASY BOUNTY: 2 RTC] Star & Share Campaign \u2014 Help Us Hit 200 Stars on RustChain!",
+      "body": "## \u2b50 Star Drive \u2014 March 2026\n\n**RustChain is at 149 stars \u2014 help us hit 200!**\n\n### How to Earn 2 RTC\n\n1. **Star these repos** (takes 30 seconds):\n   - [Rustchain](https://github.com/Scottcjn/Rustchain) (149 \u2b50)\n   - [BoTTube](https://github.com/Scottcjn/bottube) (123 \u2b50)\n   - [Beacon Atlas](https://github.com/Scottcjn/beacon-skill) (86 \u2b50)\n   - [Grazer](https://github.com/Scottcjn/grazer-skill) (60 \u2b50)\n   - [RAM Coffers](https://github.com/Scottcjn/ram-coffers) (58 \u2b50)\n   - [RustChain MCP](https://github.com/Scottcjn/rustchain-mcp) (3 \u2b50)\n   - [RustChain Monitor](https://github.com/Scottcjn/rustchain-monitor) (41 \u2b50)\n   - [llama.cpp POWER8](https://github.com/Scottcjn/llama-cpp-power8) (41 \u2b50)\n\n2. **Share on social media** (X, LinkedIn, Dev.to, Reddit, HN \u2014 any platform):\n   - Post about RustChain, BoTTube, or any Elyan Labs project\n   - Include a link to the repo\n\n3. **Comment here** with:\n   - Screenshot of your stars (or just list the repos you starred)\n   - Link to your social media post\n   - Your RTC wallet address\n\n### Bonus: 1 extra RTC if your post gets 10+ likes/retweets!\n\n### Why Stars Matter\nStars increase GitHub discoverability. More stars = more contributors = stronger ecosystem. Every star helps.\n\n**Tags:** stars, social-media, community, bounty, easy, hacktoberfest, open-source, good-first-issue\n",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1677",
+      "labels": [
+        "good first issue",
+        "bounty",
+        "easy",
+        "hacktoberfest"
+      ],
+      "created_at": "2026-03-11T09:10:38Z",
+      "reward_rtc": 2.0,
+      "difficulty": "micro",
+      "skills": [
+        "rust",
+        "social-media"
+      ]
+    },
+    {
+      "repo": "Scottcjn/rustchain-bounties",
       "number": 1615,
       "title": "[EASY BOUNTY: 2 RTC] Create installation GIFs or asciinema recordings",
       "body": "Record miner install + first attestation as asciinema/GIF. 2 RTC. Tags: documentation, asciinema, gif, readme, bounty, visual",
@@ -3294,25 +3277,6 @@
       "skills": [
         "rust",
         "social-media"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
-      "number": 1590,
-      "title": "[EASY BOUNTY: 1 RTC] Fix any typo or grammar error in docs",
-      "body": "Find and fix typos, grammar errors, or broken links in any Elyan Labs repo. 1 RTC per meaningful fix. Tags: documentation, typo, grammar, bounty, easy, beginner, hacktoberfest, open-source",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1590",
-      "labels": [
-        "documentation",
-        "good first issue",
-        "bounty",
-        "easy"
-      ],
-      "created_at": "2026-03-10T23:48:31Z",
-      "reward_rtc": 1.0,
-      "difficulty": "micro",
-      "skills": [
-        "documentation"
       ]
     },
     {
