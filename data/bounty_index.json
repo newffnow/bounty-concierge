@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-03-12T07:06:43.175814+00:00",
-  "total_count": 183,
+  "updated_at": "2026-03-13T07:05:42.514095+00:00",
+  "total_count": 186,
   "bounties": [
     {
       "repo": "Scottcjn/Rustchain",
@@ -1773,6 +1773,24 @@
     },
     {
       "repo": "Scottcjn/Rustchain",
+      "number": 908,
+      "title": "[BOUNTY: 15 RTC] Implement /wallet/history endpoint (fixes #775, #886)",
+      "body": "## Implement the /wallet/history Endpoint\n\n**Reward: 15 RTC**\n\n### Background\nThe `/wallet/history` endpoint is documented in the API spec but returns 404. Multiple bug reports have been filed (#775, #886). Time to fix it.\n\n### Task\nAdd a `/wallet/history` endpoint to `rustchain_v2_integrated_v2.2.1_rip200.py` that returns transaction history for a given wallet/miner ID.\n\n### Expected Behavior\n```\nGET /wallet/history?miner_id=dual-g4-125&limit=50\n\nResponse:\n{\n  \"ok\": true,\n  \"miner_id\": \"dual-g4-125\",\n  \"transactions\": [\n    {\"type\": \"reward\", \"amount\": 0.297, \"epoch\": 424, \"timestamp\": 1733..., \"tx_hash\": \"...\"},\n    {\"type\": \"transfer_in\", \"from\": \"founder_community\", \"amount\": 10.0, \"timestamp\": ..., \"tx_hash\": \"...\"},\n    ...\n  ],\n  \"total\": 42\n}\n```\n\n### Data Sources\n- `ledger` table: all transfers\n- `epoch_rewards` table: mining rewards\n- `balances` table: current balance\n\n### Requirements\n- Query both `ledger` and `epoch_rewards` tables\n- Return unified, sorted-by-time response\n- Support `limit` and `offset` pagination\n- Handle unknown miner_id gracefully (empty list, not error)\n\nTags: api, bug-fix, flask, sqlite",
+      "url": "https://github.com/Scottcjn/Rustchain/issues/908",
+      "labels": [
+        "bug",
+        "bounty"
+      ],
+      "created_at": "2026-03-12T20:55:33Z",
+      "reward_rtc": 15.0,
+      "difficulty": "standard",
+      "skills": [
+        "python",
+        "rust"
+      ]
+    },
+    {
+      "repo": "Scottcjn/Rustchain",
       "number": 305,
       "title": "[BOUNTY] Report a Bug \u2014 5-15 RTC",
       "body": "## Bug Report Bounty \u2014 5-15 RTC\n\nFind and report real bugs in the RustChain ecosystem.\n\n### Severity Tiers\n| Tier | Reward | Examples |\n|------|--------|---------|\n| Low | 5 RTC | UI glitches, typos in error messages, cosmetic issues |\n| Medium | 10 RTC | Incorrect calculations, broken API responses, edge cases |\n| High | 15 RTC | Data loss, security issues, consensus bugs, crash bugs |\n\n### Requirements\n- Must be a real, reproducible bug (not a feature request)\n- Include steps to reproduce\n- Include expected vs actual behavior\n- Screenshots or logs strongly encouraged\n\n### How to Claim\n1. Open an issue on the appropriate repo describing the bug\n2. Comment on this issue linking your bug report\n3. Once triaged and confirmed, receive RTC based on severity\n\n### In Scope\n- RustChain node (`Scottcjn/Rustchain`)\n- beacon-skill SDK (`Scottcjn/beacon-skill`)\n- BoTTube SDK (`Scottcjn/bottube`)\n- clawrtc miner package (PyPI)\n- Web interfaces (rustchain.org, Beacon Atlas UI)\n\nPool: 200 RTC\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
@@ -2099,6 +2117,25 @@
     },
     {
       "repo": "Scottcjn/bottube",
+      "number": 364,
+      "title": "[BOUNTY: 10 RTC] Keyboard shortcuts for BoTTube video player (a11y)",
+      "body": "## Add Keyboard Shortcuts to Video Player\n\n**Reward: 10 RTC**\n\n### Why\nAccessibility. The Flameholder has TBI and mobility challenges. Keyboard shortcuts make the platform usable for people who struggle with mouse precision.\n\n### Shortcuts to Implement\n| Key | Action |\n|-----|--------|\n| Space / K | Play/Pause |\n| J | Rewind 10s |\n| L | Forward 10s |\n| F | Fullscreen toggle |\n| M | Mute toggle |\n| Up/Down | Volume +/- 5% |\n| Left/Right | Seek -/+ 5s |\n| Escape | Exit fullscreen |\n\n### Requirements\n- Add to `watch.html` template\n- Must not interfere with comment text input (disable when typing)\n- Show a help overlay on `?` key press\n- Use `aria-label` on all player controls\n\n### Proof\n- PR with the JavaScript implementation\n- Screenshot or video of shortcuts working\n- Help overlay screenshot\n\nTags: accessibility, a11y, video-player, keyboard",
+      "url": "https://github.com/Scottcjn/bottube/issues/364",
+      "labels": [
+        "good first issue",
+        "bounty",
+        "accessibility"
+      ],
+      "created_at": "2026-03-12T20:55:42Z",
+      "reward_rtc": 10.0,
+      "difficulty": "standard",
+      "skills": [
+        "javascript",
+        "social-media"
+      ]
+    },
+    {
+      "repo": "Scottcjn/bottube",
       "number": 128,
       "title": "[BOUNTY] Referral Program Beta \u2014 Bring 1 New Human Signup (10 RTC each, Pool: 200 RTC)",
       "body": "## Summary\nUse the BoTTube referral system to bring one real new human signup to the platform.\n\n## Why This Matters\nThis bounty is for measurable ecosystem growth, not vanity traffic. The goal is to prove the referral flow works and that it can bring in real new humans who complete a genuine signup.\n\n## Scope\n- generate your referral code using the current referral endpoint\n- share your referral link with a real person\n- get one real new human to sign up through that link\n- preserve enough proof for maintainers to verify the referral event\n\n## Referral Flow\n- referral short-link: `https://bottube.ai/r/<code>`\n- agents: `GET /api/agents/me/referral`\n- humans: `GET /api/users/me/referral`\n\n## Deliverable\nOne verified new human signup attributed to your referral link.\n\n## Acceptance Criteria\n- [ ] referral link was issued by the live BoTTube referral flow\n- [ ] one real new human completed signup through the referral link\n- [ ] the referred account is not your own account, alt, or obvious sockpuppet\n- [ ] claim includes enough evidence for server-side maintainer verification\n- [ ] abuse, duplicate claims, or suspicious signup patterns are grounds for rejection\n\n## Verification Proof\nPost proof in this issue including:\n- your referral link\n- screenshot or recording of the signup confirmation without sensitive data\n- the new user's BoTTube username or profile URL\n- approximate signup time for maintainer cross-checking\n- your RTC wallet or `miner_id`\n\n## Payout\n- `10 RTC` per accepted referral\n- pool: `200 RTC`\n\n## Non-Goals\n- self-referrals\n- burner-account or bot-account signups\n- paid traffic, spam blasts, or rate-limit abuse\n- duplicate claims against the same referred user\n\n## Claim Routing\nUse this issue for referral proof and payout review. If the referral system itself breaks or behaves incorrectly, open a separate product issue in `Scottcjn/bottube` and link it back here.\n\n## Notes\nIf you hit rate limits, wait and retry normally. Do not brute force the referral endpoints.",
@@ -2169,6 +2206,23 @@
       "difficulty": "micro",
       "skills": [
         "rust"
+      ]
+    },
+    {
+      "repo": "Scottcjn/bottube",
+      "number": 365,
+      "title": "[BOUNTY: 8 RTC] Screen reader friendly video pages (a11y)",
+      "body": "## Screen Reader Friendly Video Descriptions + Alt Text\n\n**Reward: 8 RTC**\n\n### Task\nMake BoTTube watch pages fully accessible to screen readers.\n\n### Requirements\n1. Add `alt` text to all video thumbnails (use video title)\n2. Add `aria-describedby` linking video player to description text\n3. Add structured data for video duration, upload date in screen-reader-friendly format\n4. Ensure comment section is navigable with screen reader (proper heading hierarchy)\n5. Add `role=\"region\"` and `aria-label` to video player, comments, and recommendations sections\n\n### Files to Modify\n- `bottube_templates/watch.html` (2,761 lines -- the big one)\n- `bottube_templates/index.html` (thumbnail grid)\n\n### Proof\n- PR with changes\n- Screen reader test output (NVDA, VoiceOver, or ORCA)\n\nTags: accessibility, a11y, screen-reader, aria",
+      "url": "https://github.com/Scottcjn/bottube/issues/365",
+      "labels": [
+        "bounty",
+        "accessibility"
+      ],
+      "created_at": "2026-03-12T20:55:49Z",
+      "reward_rtc": 8.0,
+      "difficulty": "micro",
+      "skills": [
+        "social-media"
       ]
     },
     {
