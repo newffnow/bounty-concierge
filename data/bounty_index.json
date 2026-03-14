@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-13T07:05:42.514095+00:00",
+  "updated_at": "2026-03-14T07:00:33.019981+00:00",
   "total_count": 186,
   "bounties": [
     {
@@ -217,6 +217,29 @@
         "python",
         "rust",
         "translation"
+      ]
+    },
+    {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 674,
+      "title": "[BOUNTY: 25-150 RTC] Build RustChain Tools & Features in Rust",
+      "body": "## Rust Development Bounty\n\n**Reward: 25-150 RTC** based on scope and quality\n\nRustChain is named after Rust for a reason. We want real Rust code in the ecosystem. The core node is Python today \u2014 help us build the future in Rust.\n\n### Bounty Tiers\n\n**Tier 1: Utilities (25-50 RTC)**\n- RustChain CLI wallet (send/receive/balance check)\n- Block explorer TUI (terminal UI)\n- Miner status monitor (curses/ratatui)\n- RTC address generator + validator\n- Hardware fingerprint collector (equivalent of fingerprint_checks.py)\n- Epoch reward calculator\n- Configuration file parser/validator for node settings\n\n**Tier 2: Libraries & SDKs (50-100 RTC)**\n- `rustchain-sdk` crate \u2014 Rust client library for the RustChain API\n- Ed25519 wallet library with BIP39 mnemonic support\n- Attestation protocol client (challenge/response flow)\n- Hardware fingerprint library (clock drift, cache timing, SIMD identity)\n- Prometheus metrics exporter for RustChain nodes\n- SQLite database reader/writer for rustchain_v2.db schema\n- Serialization library for RustChain block/transaction formats\n\n**Tier 3: Major Components (100-150 RTC)**\n- Native Rust miner with full attestation support\n- Peer-to-peer gossip protocol for node discovery\n- Block validation engine\n- Fleet detection / anti-VM fingerprinting in Rust\n- Ergo anchor transaction builder\n- WebSocket event stream for real-time block/epoch updates\n- Full node implementation (partial \u2014 even one major subsystem counts)\n\n### Requirements\n- Must compile on stable Rust (latest)\n- Must include `Cargo.toml` with proper metadata\n- Must have at least basic tests (`cargo test` passes)\n- Must include a README with usage examples\n- Code must be idiomatic Rust (no `unsafe` unless justified)\n- MIT or Apache-2.0 license\n\n### Bonus RTC\n- **+10 RTC** if published to crates.io\n- **+5 RTC** if includes CI workflow (GitHub Actions)\n- **+5 RTC** if includes documentation comments (`///` doc comments)\n\n### How to Submit\n1. Create a repo or fork an existing Scottcjn repo\n2. Open a PR to the appropriate repo (or link your standalone repo)\n3. Comment here with: wallet name, repo link, which tier you're targeting\n\n### API Reference\n- Health: `GET https://rustchain.org/health`\n- Miners: `GET https://rustchain.org/api/miners`\n- Epoch: `GET https://rustchain.org/epoch`\n- Attestation: `POST https://rustchain.org/attest/challenge`\n- Explorer: `https://rustchain.org/explorer/`\n\n### Existing Python Code to Port\n- Miner: `rustchain_linux_miner.py` (attestation client)\n- Fingerprints: `fingerprint_checks.py` (6 hardware checks)\n- Node: `rustchain_v2_integrated_v2.2.1_rip200.py` (Flask server)\n- SDK: `sdk/python/rustchain_sdk/client.py`\n\n**The long-term goal is a full Rust node. Every component you build in Rust gets us closer.**\n\n```\nWallet: your-wallet-name\nRepo: https://github.com/...\nTier: 1/2/3\nDescription: [what you built]\n```",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/674",
+      "labels": [
+        "bounty",
+        "standard",
+        "rust",
+        "development"
+      ],
+      "created_at": "2026-03-05T23:56:06Z",
+      "reward_rtc": 150.0,
+      "difficulty": "standard",
+      "skills": [
+        "ci/cd",
+        "documentation",
+        "javascript",
+        "python",
+        "rust"
       ]
     },
     {
@@ -535,6 +558,24 @@
         "ci/cd",
         "documentation",
         "javascript",
+        "rust"
+      ]
+    },
+    {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 554,
+      "title": "Fix RIP-201 Bucket Normalization Spoofing (from PoC #551)",
+      "body": "## Context\nliu971227-sys demonstrated in Rustchain#551 that a modern x86 can claim `device_arch=G4` and get routed into the `vintage_powerpc` bucket with 2.5x multiplier.\n\n## Required Fixes\n1. Cross-validate CPU brand string vs claimed `device_arch` \u2014 reject `Intel Xeon` + `G4`\n2. Require SIMD evidence (AltiVec/vec_perm) for vintage PowerPC claims\n3. Require cache timing profile matching PowerPC characteristics\n4. Classify miners into reward buckets from verified server-side features, not raw client-reported architecture strings\n\n## Bounty: 100 RTC\n\nMust include tests proving the spoofing vector from #551 is blocked.\n\n**Wallet:** Submit your RTC wallet name when claiming.",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/554",
+      "labels": [
+        "bounty",
+        "security",
+        "100 RTC"
+      ],
+      "created_at": "2026-03-03T13:47:53Z",
+      "reward_rtc": 100.0,
+      "difficulty": "major",
+      "skills": [
         "rust"
       ]
     },
@@ -1494,6 +1535,25 @@
       ]
     },
     {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 550,
+      "title": "[25 RTC] Dual-Mining: Warthog (Janushash) Integration",
+      "body": "## Summary\nAdd Warthog dual-mining support to the RustChain mining flow so `clawrtc` can detect, verify, or launch supported Warthog mining processes alongside RustChain participation.\n\n## Why This Matters\nThis is an integration bounty. The goal is to make RustChain more attractive to existing Warthog miners by letting them earn RTC on top of ongoing Janushash mining with minimal friction.\n\n## Scope\n- add Warthog support to the dual-mining integration path in `clawrtc`\n- detect supported Warthog miner or node processes\n- support at least one practical verification path such as local node RPC or pool-account proof\n- support subprocess launch and clean lifecycle management for at least one stock miner where feasible\n- document the integration path, supported miners, and expected commands\n- include tests covering detection and parsing behavior\n\n## Supported Integration Areas\nPotential implementation areas include:\n- process detection for `wart-node`, `janusminer`, or `bzminer -a warthog`\n- local Warthog node RPC verification\n- pool-account verification for a supported pool\n- managed subprocess launch for a stock miner\n\n## Deliverable\nA working Warthog dual-mining integration path, or PR-ready implementation, that can detect or launch Warthog mining and tie it into RustChain\u2019s dual-mining logic with documented behavior.\n\n## Acceptance Criteria\n- [ ] at least two supported Warthog process or miner signatures are detected correctly\n- [ ] at least one verification path is implemented, such as local node RPC or pool proof\n- [ ] subprocess launch is supported for at least one stock miner, or the omission is documented clearly\n- [ ] detection and RPC or pool parsing behavior are covered by tests\n- [ ] Linux support is documented and working\n- [ ] commands and usage examples for `clawrtc` are documented clearly\n- [ ] implementation is specific enough to land without another spec pass\n\n## Verification Proof\nPost proof in this issue including:\n- PR or source link\n- supported miner or node processes tested\n- sample detection or verification output\n- notes on which pools or RPC endpoints were integrated\n- command examples used for dry-run, detect-only, or launch flows\n\n## Payout\n`25 RTC`\n\n## Bonus Multipliers\nThe existing bonus multipliers for managed subprocess launch, external miner detection, pool verification, and node RPC verification still apply where implemented.\n\n## Non-Goals\n- rewriting Warthog mining software itself\n- claiming full support for unsupported miners without tested proof\n- vague multi-chain ambitions outside the Warthog integration path\n- unrelated RustChain miner UX work outside this dual-mining integration\n\n## Claim Routing\nUse this issue for Warthog integration implementation proof and payout discussion. If code lands in `Scottcjn/Rustchain`, link the PR back here and keep testing and verification details on this issue.\n\n## Resources\nRelevant references include the current dual-mining implementation area, the Warthog node and miner tooling, and the RPC or pool endpoints listed in the original bounty context.",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/550",
+      "labels": [
+        "bounty",
+        "standard",
+        "integration"
+      ],
+      "created_at": "2026-03-02T14:08:09Z",
+      "reward_rtc": 25.0,
+      "difficulty": "standard",
+      "skills": [
+        "javascript",
+        "rust"
+      ]
+    },
+    {
       "repo": "Scottcjn/Rustchain",
       "number": 7,
       "title": "[BOUNTY] Run a RustChain Miner on Real Hardware \u2014 Earn 25 RTC + Mining Rewards",
@@ -1844,24 +1904,6 @@
       "difficulty": "standard",
       "skills": [
         "social-media"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
-      "number": 1609,
-      "title": "[BOUNTY: 10 RTC] Create a Grafana dashboard for RustChain metrics",
-      "body": "Prometheus exporter + Grafana dashboard: uptime, miners, epochs, supply. 10 RTC. Tags: grafana, prometheus, monitoring, devops, bounty, observability",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1609",
-      "labels": [
-        "bounty",
-        "feature",
-        "monitoring"
-      ],
-      "created_at": "2026-03-10T23:50:06Z",
-      "reward_rtc": 10.0,
-      "difficulty": "standard",
-      "skills": [
-        "rust"
       ]
     },
     {
@@ -2285,44 +2327,6 @@
     },
     {
       "repo": "Scottcjn/rustchain-bounties",
-      "number": 1606,
-      "title": "[BOUNTY: 5 RTC] Create a CLI tool to monitor RustChain node health",
-      "body": "Terminal dashboard (rich/textual) showing node health, active miners, epoch progress, balances. 5 RTC. Tags: cli, terminal, monitoring, python, rich, textual, bounty, devops",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1606",
-      "labels": [
-        "bounty",
-        "feature",
-        "cli"
-      ],
-      "created_at": "2026-03-10T23:49:21Z",
-      "reward_rtc": 5.0,
-      "difficulty": "micro",
-      "skills": [
-        "javascript",
-        "python",
-        "rust"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
-      "number": 1602,
-      "title": "[BOUNTY: 5 RTC] Create an MCP tool that interacts with RustChain",
-      "body": "Model Context Protocol tool for AI agents. Reference: github.com/Scottcjn/rustchain-mcp. 5 RTC per useful tool. Tags: mcp, model-context-protocol, ai, llm, agent, bounty",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1602",
-      "labels": [
-        "bounty",
-        "feature",
-        "ai"
-      ],
-      "created_at": "2026-03-10T23:48:46Z",
-      "reward_rtc": 5.0,
-      "difficulty": "micro",
-      "skills": [
-        "rust"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
       "number": 1600,
       "title": "[BOUNTY: 5 RTC] Build a web dashboard showing RustChain stats",
       "body": "Web page with live epoch, miner count, supply, transactions. Auto-refresh. Any framework. 5 RTC, +3 for mobile responsive. Tags: frontend, dashboard, web, javascript, react, bounty, blockchain",
@@ -2338,26 +2342,6 @@
       "skills": [
         "javascript",
         "rust"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
-      "number": 1594,
-      "title": "[BOUNTY: 5 RTC] Write a blog post or tutorial about RustChain",
-      "body": "Write on Dev.to, Medium, Hashnode, or your blog. 500+ words, include GitHub links. AI-assisted is welcome. 5 RTC base, +5 for 100+ views. Tags: blog, tutorial, content, writing, bounty, blockchain, devto",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1594",
-      "labels": [
-        "bounty",
-        "propagation",
-        "content"
-      ],
-      "created_at": "2026-03-10T23:48:36Z",
-      "reward_rtc": 5.0,
-      "difficulty": "micro",
-      "skills": [
-        "javascript",
-        "rust",
-        "social-media"
       ]
     },
     {
@@ -2569,6 +2553,43 @@
       ]
     },
     {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 556,
+      "title": "Grazer: Defensive Error Handling Across All Platform Discover Methods",
+      "body": "## What\nThe grazer CLI discover commands need defensive `.get()` handling for all API response fields across ALL platforms (not just BoTTube).\n\n## Identified Issues\n- Moltbook discover assumes `post[\"author\"]` exists\n- ClawSta discover assumes all image fields present\n- AgentChan, Colony, MoltX responses may have missing fields\n- All should use `.get(key, default)` pattern\n\n## Bounty: 5 RTC\n\nSee grazer-skill#35 (merged) as the reference pattern for BoTTube.\n\n**Wallet:** Submit your RTC wallet name when claiming.",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/556",
+      "labels": [
+        "bounty",
+        "5 RTC",
+        "grazer"
+      ],
+      "created_at": "2026-03-03T13:47:55Z",
+      "reward_rtc": 5.0,
+      "difficulty": "micro",
+      "skills": [
+        "social-media"
+      ]
+    },
+    {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 555,
+      "title": "BoTTube: Social Graph API with Flask Integration Tests",
+      "body": "## What\nAdd social graph API endpoints to BoTTube:\n- `GET /api/social/graph` \u2014 network visualization data (follower/following pairs, top connections)\n- `GET /api/agents/<name>/interactions` \u2014 per-agent incoming/outgoing followers\n\n## Requirements\n- SQL JOINs on existing `subscriptions` table\n- Limit parameter with bounds checking\n- Flask `test_client()` integration tests (NOT mock-based)\n- Follow pattern in `tests/test_tipping.py`\n\n## Bounty: 5 RTC\n\nRyanD66 has a WIP PR (bottube#246) with solid server code but needs rebase + proper tests.\n\n**Wallet:** Submit your RTC wallet name when claiming.",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/555",
+      "labels": [
+        "bounty",
+        "bottube",
+        "5 RTC"
+      ],
+      "created_at": "2026-03-03T13:47:54Z",
+      "reward_rtc": 5.0,
+      "difficulty": "micro",
+      "skills": [
+        "python",
+        "social-media"
+      ]
+    },
+    {
       "repo": "Scottcjn/Rustchain",
       "number": 819,
       "title": "[Bounty] @tomisnotcat \u2014 ARM architecture details needed (5 RTC)",
@@ -2680,25 +2701,6 @@
     },
     {
       "repo": "Scottcjn/rustchain-bounties",
-      "number": 1617,
-      "title": "[BOUNTY: 3 RTC] Create a Postman collection for RustChain API",
-      "body": "Exportable collection with all endpoints + examples. 3 RTC. Tags: postman, insomnia, api-testing, rest, bounty, documentation",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1617",
-      "labels": [
-        "documentation",
-        "bounty",
-        "api"
-      ],
-      "created_at": "2026-03-10T23:50:19Z",
-      "reward_rtc": 3.0,
-      "difficulty": "micro",
-      "skills": [
-        "documentation",
-        "rust"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
       "number": 1613,
       "title": "[BOUNTY: 3 RTC] Set up Dependabot or Renovate for any Elyan Labs repo",
       "body": "Configure automated dependency updates. .github/dependabot.yml or renovate.json. 3 RTC per repo. Tags: dependabot, renovate, security, dependencies, bounty",
@@ -2718,25 +2720,6 @@
     },
     {
       "repo": "Scottcjn/rustchain-bounties",
-      "number": 1610,
-      "title": "[BOUNTY: 3 RTC] Write a comparison: RustChain vs Ethereum PoS",
-      "body": "Technical comparison: consensus, hardware, energy, decentralization. 500+ words. 3 RTC. Tags: ethereum, proof-of-stake, comparison, documentation, bounty, blockchain",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1610",
-      "labels": [
-        "documentation",
-        "bounty",
-        "content"
-      ],
-      "created_at": "2026-03-10T23:50:08Z",
-      "reward_rtc": 3.0,
-      "difficulty": "micro",
-      "skills": [
-        "documentation",
-        "rust"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
       "number": 1603,
       "title": "[BOUNTY: 3 RTC] Create a Python/JS SDK wrapper for BoTTube API",
       "body": "SDK for BoTTube video platform API. Upload, search, comment, vote. 3 RTC. Tags: sdk, api, python, javascript, bounty, ai, video",
@@ -2752,27 +2735,6 @@
         "javascript",
         "python",
         "social-media"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
-      "number": 1599,
-      "title": "[BOUNTY: 3 RTC] Create a Dockerfile for the RustChain miner",
-      "body": "Dockerfile + docker-compose.yml for Python miner. Accept WALLET_NAME/NODE_URL env vars. 3 RTC. Note: Docker miners earn minimal rewards (anti-VM). Tags: docker, container, devops, bounty, python",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1599",
-      "labels": [
-        "good first issue",
-        "bounty",
-        "docker"
-      ],
-      "created_at": "2026-03-10T23:48:42Z",
-      "reward_rtc": 3.0,
-      "difficulty": "micro",
-      "skills": [
-        "docker",
-        "javascript",
-        "python",
-        "rust"
       ]
     },
     {
@@ -2912,6 +2874,59 @@
       ]
     },
     {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 521,
+      "title": "[Achievement] Documenter - Improve Docs in 3+ Repos - 3 RTC",
+      "body": "## Achievement: Documenter\n**Reward**: 3 RTC | **Multi-claim**: Yes\n\n### How to earn\nSubmit **merged documentation PRs to 3+ different** Scottcjn repos.\n\nDocumentation includes: README improvements, CONTRIBUTING.md, comments, docstrings, examples, tutorials.\n\n### Acceptance criteria\n- [ ] 3 merged doc PRs across 3 different repos\n- [ ] Links posted as comment\n- [ ] Each PR improves documentation meaningfully\n\n### How to claim\nComment here with links to your 3 merged doc PRs. 3 RTC bonus!\n\n**Reward**: 3 RTC (~$0.30) | **Multi-claim**",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/521",
+      "labels": [
+        "bounty",
+        "open",
+        "standard",
+        "community"
+      ],
+      "created_at": "2026-03-01T04:13:54Z",
+      "reward_rtc": 3.0,
+      "difficulty": "standard",
+      "skills": [
+        "documentation"
+      ]
+    },
+    {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 520,
+      "title": "[Achievement] Bug Hunter - Find a Real Bug - 3 RTC",
+      "body": "## Achievement: Bug Hunter\n**Reward**: 3 RTC | **Multi-claim**: Yes\n\n### How to earn\nFind and report a **real, reproducible bug** in any Scottcjn repository.\n\n### Acceptance criteria\n- [ ] Bug is real and reproducible\n- [ ] Filed as a proper issue with steps to reproduce\n- [ ] Not a duplicate of an existing issue\n- [ ] Includes environment info (OS, version, etc.)\n\n### How to claim\nFile a bug issue, then comment here with the link. 3 RTC if confirmed valid.\n\n**Reward**: 3 RTC (~$0.30) | **Multi-claim**",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/520",
+      "labels": [
+        "bounty",
+        "open",
+        "standard",
+        "community"
+      ],
+      "created_at": "2026-03-01T04:13:51Z",
+      "reward_rtc": 3.0,
+      "difficulty": "standard",
+      "skills": []
+    },
+    {
+      "repo": "Scottcjn/rustchain-bounties",
+      "number": 519,
+      "title": "[Achievement] Explorer - PRs to 3+ Repos - 3 RTC",
+      "body": "## Achievement: Explorer\n**Reward**: 3 RTC | **Multi-claim**: Yes\n\n### How to earn\nSubmit **merged PRs to 3 different** Scottcjn repositories.\n\n### Acceptance criteria\n- [ ] 3 merged PRs across 3 different repos\n- [ ] Links to all 3 merged PRs posted as comment\n- [ ] PRs are substantive (not just whitespace)\n\n### How to claim\nComment here with links to your 3 merged PRs. 3 RTC bonus!\n\n**Reward**: 3 RTC (~$0.30) | **Multi-claim**",
+      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/519",
+      "labels": [
+        "bounty",
+        "open",
+        "standard",
+        "community"
+      ],
+      "created_at": "2026-03-01T04:13:49Z",
+      "reward_rtc": 3.0,
+      "difficulty": "standard",
+      "skills": []
+    },
+    {
       "repo": "Scottcjn/Rustchain",
       "number": 303,
       "title": "[BOUNTY] Post About RustChain on Social Media \u2014 3 RTC",
@@ -2967,24 +2982,6 @@
       "skills": [
         "rust",
         "social-media"
-      ]
-    },
-    {
-      "repo": "Scottcjn/rustchain-bounties",
-      "number": 1615,
-      "title": "[EASY BOUNTY: 2 RTC] Create installation GIFs or asciinema recordings",
-      "body": "Record miner install + first attestation as asciinema/GIF. 2 RTC. Tags: documentation, asciinema, gif, readme, bounty, visual",
-      "url": "https://github.com/Scottcjn/rustchain-bounties/issues/1615",
-      "labels": [
-        "documentation",
-        "bounty",
-        "easy"
-      ],
-      "created_at": "2026-03-10T23:50:16Z",
-      "reward_rtc": 2.0,
-      "difficulty": "micro",
-      "skills": [
-        "documentation"
       ]
     },
     {
